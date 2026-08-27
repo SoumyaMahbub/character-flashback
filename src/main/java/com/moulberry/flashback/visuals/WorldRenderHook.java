@@ -42,15 +42,26 @@ public class WorldRenderHook {
             return;
         }
 
-        com.moulberry.flashback.character.render.CharacterRenderer.renderCharacters(poseStack, camera, replayTick);
+        EditorState editorState = EditorStateManager.getCurrent();
+        if (editorState != null) {
+            long stamp = editorState.acquireRead();
+            com.moulberry.flashback.state.EditorScene currentScene;
+            try {
+                currentScene = editorState.getCurrentScene(stamp);
+            } finally {
+                editorState.release(stamp);
+            }
+
+            if (currentScene != null && currentScene.actorManager != null) {
+                boolean isPlaying = Flashback.isExporting() || (replayServer != null && !replayServer.replayPaused);
+                currentScene.actorManager.syncToLevel(Minecraft.getInstance().level, replayTick, isPlaying);
+            }
+        }
 
         if (Flashback.isExporting() || !ReplayUI.isActive()) {
             return;
         }
 
-        com.moulberry.flashback.character.render.CharacterGizmo.renderGizmos(poseStack, camera);
-
-        EditorState editorState = EditorStateManager.getCurrent();
         if (editorState != null && editorState.replayVisuals.cameraPath) {
             CameraPath.renderCameraPath(poseStack, camera, replayServer);
         }

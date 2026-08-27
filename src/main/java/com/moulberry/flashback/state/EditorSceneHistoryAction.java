@@ -143,33 +143,33 @@ public interface EditorSceneHistoryAction {
         }
     }
 
-    record SetCharacterKeyframe(java.util.UUID characterId, com.moulberry.flashback.character.CharacterTrackType trackType, int tick, com.moulberry.flashback.character.CharacterKeyframe keyframe) implements EditorSceneHistoryAction {
+    record SetActorKeyframe(java.util.UUID actorId, com.moulberry.flashback.actor.ActorTrackType trackType, int tick, com.moulberry.flashback.actor.ActorKeyframe keyframe) implements EditorSceneHistoryAction {
         @Override
         public void apply(EditorScene editorScene) {
-            if (editorScene.characterManager != null) {
-                var character = editorScene.characterManager.getCharacter(this.characterId);
-                if (character != null) {
-                    character.setKeyframe(this.trackType, this.tick, this.keyframe.getValue(), this.keyframe.getInterpolationType());
+            if (editorScene.actorManager != null) {
+                var actor = editorScene.actorManager.getActor(this.actorId);
+                if (actor != null) {
+                    actor.setKeyframe(this.trackType, this.tick, this.keyframe.getValue(), this.keyframe.getInterpolationType());
                 }
             }
         }
 
-        public static class TypeAdapter implements JsonSerializer<SetCharacterKeyframe>, JsonDeserializer<SetCharacterKeyframe> {
+        public static class TypeAdapter implements JsonSerializer<SetActorKeyframe>, JsonDeserializer<SetActorKeyframe> {
             @Override
-            public SetCharacterKeyframe deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            public SetActorKeyframe deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
                 JsonObject jsonObject = json.getAsJsonObject();
-                java.util.UUID characterId = java.util.UUID.fromString(jsonObject.get("character_id").getAsString());
-                com.moulberry.flashback.character.CharacterTrackType trackType = com.moulberry.flashback.character.CharacterTrackType.valueOf(jsonObject.get("track_type").getAsString());
+                java.util.UUID actorId = java.util.UUID.fromString(jsonObject.get("actor_id").getAsString());
+                com.moulberry.flashback.actor.ActorTrackType trackType = com.moulberry.flashback.actor.ActorTrackType.valueOf(jsonObject.get("track_type").getAsString());
                 int tick = jsonObject.get("tick").getAsInt();
-                com.moulberry.flashback.character.CharacterKeyframe keyframe = context.deserialize(jsonObject.get("keyframe"), com.moulberry.flashback.character.CharacterKeyframe.class);
-                return new SetCharacterKeyframe(characterId, trackType, tick, keyframe);
+                com.moulberry.flashback.actor.ActorKeyframe keyframe = context.deserialize(jsonObject.get("keyframe"), com.moulberry.flashback.actor.ActorKeyframe.class);
+                return new SetActorKeyframe(actorId, trackType, tick, keyframe);
             }
 
             @Override
-            public JsonElement serialize(SetCharacterKeyframe src, Type typeOfSrc, JsonSerializationContext context) {
+            public JsonElement serialize(SetActorKeyframe src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("action_type", "set_character_keyframe");
-                jsonObject.addProperty("character_id", src.characterId.toString());
+                jsonObject.addProperty("action_type", "set_actor_keyframe");
+                jsonObject.addProperty("actor_id", src.actorId.toString());
                 jsonObject.addProperty("track_type", src.trackType.name());
                 jsonObject.addProperty("tick", src.tick);
                 jsonObject.add("keyframe", context.serialize(src.keyframe));
@@ -178,32 +178,32 @@ public interface EditorSceneHistoryAction {
         }
     }
 
-    record RemoveCharacterKeyframe(java.util.UUID characterId, com.moulberry.flashback.character.CharacterTrackType trackType, int tick) implements EditorSceneHistoryAction {
+    record RemoveActorKeyframe(java.util.UUID actorId, com.moulberry.flashback.actor.ActorTrackType trackType, int tick) implements EditorSceneHistoryAction {
         @Override
         public void apply(EditorScene editorScene) {
-            if (editorScene.characterManager != null) {
-                var character = editorScene.characterManager.getCharacter(this.characterId);
-                if (character != null) {
-                    character.removeKeyframe(this.trackType, this.tick);
+            if (editorScene.actorManager != null) {
+                var actor = editorScene.actorManager.getActor(this.actorId);
+                if (actor != null) {
+                    actor.removeKeyframe(this.trackType, this.tick);
                 }
             }
         }
 
-        public static class TypeAdapter implements JsonSerializer<RemoveCharacterKeyframe>, JsonDeserializer<RemoveCharacterKeyframe> {
+        public static class TypeAdapter implements JsonSerializer<RemoveActorKeyframe>, JsonDeserializer<RemoveActorKeyframe> {
             @Override
-            public RemoveCharacterKeyframe deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            public RemoveActorKeyframe deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
                 JsonObject jsonObject = json.getAsJsonObject();
-                java.util.UUID characterId = java.util.UUID.fromString(jsonObject.get("character_id").getAsString());
-                com.moulberry.flashback.character.CharacterTrackType trackType = com.moulberry.flashback.character.CharacterTrackType.valueOf(jsonObject.get("track_type").getAsString());
+                java.util.UUID actorId = java.util.UUID.fromString(jsonObject.get("actor_id").getAsString());
+                com.moulberry.flashback.actor.ActorTrackType trackType = com.moulberry.flashback.actor.ActorTrackType.valueOf(jsonObject.get("track_type").getAsString());
                 int tick = jsonObject.get("tick").getAsInt();
-                return new RemoveCharacterKeyframe(characterId, trackType, tick);
+                return new RemoveActorKeyframe(actorId, trackType, tick);
             }
 
             @Override
-            public JsonElement serialize(RemoveCharacterKeyframe src, Type typeOfSrc, JsonSerializationContext context) {
+            public JsonElement serialize(RemoveActorKeyframe src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("action_type", "remove_character_keyframe");
-                jsonObject.addProperty("character_id", src.characterId.toString());
+                jsonObject.addProperty("action_type", "remove_actor_keyframe");
+                jsonObject.addProperty("actor_id", src.actorId.toString());
                 jsonObject.addProperty("track_type", src.trackType.name());
                 jsonObject.addProperty("tick", src.tick);
                 return jsonObject;
@@ -211,55 +211,55 @@ public interface EditorSceneHistoryAction {
         }
     }
 
-    record AddCharacter(com.moulberry.flashback.character.AnimatedCharacter character) implements EditorSceneHistoryAction {
+    record AddActor(com.moulberry.flashback.actor.FlashbackActor actor) implements EditorSceneHistoryAction {
         @Override
         public void apply(EditorScene editorScene) {
-            if (editorScene.characterManager != null) {
-                if (editorScene.characterManager.getCharacter(this.character.getId()) == null) {
-                    editorScene.characterManager.getCharacters().add(this.character.duplicate(this.character.getId(), this.character.getName()));
+            if (editorScene.actorManager != null) {
+                if (editorScene.actorManager.getActor(this.actor.getId()) == null) {
+                    editorScene.actorManager.getActors().add(this.actor.duplicate(this.actor.getId(), this.actor.getName()));
                 }
             }
         }
 
-        public static class TypeAdapter implements JsonSerializer<AddCharacter>, JsonDeserializer<AddCharacter> {
+        public static class TypeAdapter implements JsonSerializer<AddActor>, JsonDeserializer<AddActor> {
             @Override
-            public AddCharacter deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            public AddActor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
                 JsonObject jsonObject = json.getAsJsonObject();
-                com.moulberry.flashback.character.AnimatedCharacter character = context.deserialize(jsonObject.get("character"), com.moulberry.flashback.character.AnimatedCharacter.class);
-                return new AddCharacter(character);
+                com.moulberry.flashback.actor.FlashbackActor actor = context.deserialize(jsonObject.get("actor"), com.moulberry.flashback.actor.FlashbackActor.class);
+                return new AddActor(actor);
             }
 
             @Override
-            public JsonElement serialize(AddCharacter src, Type typeOfSrc, JsonSerializationContext context) {
+            public JsonElement serialize(AddActor src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("action_type", "add_character");
-                jsonObject.add("character", context.serialize(src.character));
+                jsonObject.addProperty("action_type", "add_actor");
+                jsonObject.add("actor", context.serialize(src.actor));
                 return jsonObject;
             }
         }
     }
 
-    record RemoveCharacter(com.moulberry.flashback.character.AnimatedCharacter character) implements EditorSceneHistoryAction {
+    record RemoveActor(com.moulberry.flashback.actor.FlashbackActor actor) implements EditorSceneHistoryAction {
         @Override
         public void apply(EditorScene editorScene) {
-            if (editorScene.characterManager != null) {
-                editorScene.characterManager.removeCharacter(this.character.getId());
+            if (editorScene.actorManager != null) {
+                editorScene.actorManager.removeActor(this.actor.getId());
             }
         }
 
-        public static class TypeAdapter implements JsonSerializer<RemoveCharacter>, JsonDeserializer<RemoveCharacter> {
+        public static class TypeAdapter implements JsonSerializer<RemoveActor>, JsonDeserializer<RemoveActor> {
             @Override
-            public RemoveCharacter deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            public RemoveActor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
                 JsonObject jsonObject = json.getAsJsonObject();
-                com.moulberry.flashback.character.AnimatedCharacter character = context.deserialize(jsonObject.get("character"), com.moulberry.flashback.character.AnimatedCharacter.class);
-                return new RemoveCharacter(character);
+                com.moulberry.flashback.actor.FlashbackActor actor = context.deserialize(jsonObject.get("actor"), com.moulberry.flashback.actor.FlashbackActor.class);
+                return new RemoveActor(actor);
             }
 
             @Override
-            public JsonElement serialize(RemoveCharacter src, Type typeOfSrc, JsonSerializationContext context) {
+            public JsonElement serialize(RemoveActor src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("action_type", "remove_character");
-                jsonObject.add("character", context.serialize(src.character));
+                jsonObject.addProperty("action_type", "remove_actor");
+                jsonObject.add("actor", context.serialize(src.actor));
                 return jsonObject;
             }
         }
@@ -275,10 +275,10 @@ public interface EditorSceneHistoryAction {
                 case "remove_keyframe" -> context.deserialize(json, RemoveKeyframe.class);
                 case "add_track" -> context.deserialize(json, AddTrack.class);
                 case "remove_track" -> context.deserialize(json, RemoveTrack.class);
-                case "set_character_keyframe" -> context.deserialize(json, SetCharacterKeyframe.class);
-                case "remove_character_keyframe" -> context.deserialize(json, RemoveCharacterKeyframe.class);
-                case "add_character" -> context.deserialize(json, AddCharacter.class);
-                case "remove_character" -> context.deserialize(json, RemoveCharacter.class);
+                case "set_actor_keyframe" -> context.deserialize(json, SetActorKeyframe.class);
+                case "remove_actor_keyframe" -> context.deserialize(json, RemoveActorKeyframe.class);
+                case "add_actor" -> context.deserialize(json, AddActor.class);
+                case "remove_actor" -> context.deserialize(json, RemoveActor.class);
                 default -> throw new IllegalStateException("Unknown action type: " + type);
             };
         }
@@ -303,21 +303,21 @@ public interface EditorSceneHistoryAction {
                     jsonObject = (JsonObject) context.serialize(removeTrack);
                     jsonObject.addProperty("action_type", "remove_track");
                 }
-                case SetCharacterKeyframe setCharacterKeyframe -> {
-                    jsonObject = (JsonObject) context.serialize(setCharacterKeyframe);
-                    jsonObject.addProperty("action_type", "set_character_keyframe");
+                case SetActorKeyframe setActorKeyframe -> {
+                    jsonObject = (JsonObject) context.serialize(setActorKeyframe);
+                    jsonObject.addProperty("action_type", "set_actor_keyframe");
                 }
-                case RemoveCharacterKeyframe removeCharacterKeyframe -> {
-                    jsonObject = (JsonObject) context.serialize(removeCharacterKeyframe);
-                    jsonObject.addProperty("action_type", "remove_character_keyframe");
+                case RemoveActorKeyframe removeActorKeyframe -> {
+                    jsonObject = (JsonObject) context.serialize(removeActorKeyframe);
+                    jsonObject.addProperty("action_type", "remove_actor_keyframe");
                 }
-                case AddCharacter addCharacter -> {
-                    jsonObject = (JsonObject) context.serialize(addCharacter);
-                    jsonObject.addProperty("action_type", "add_character");
+                case AddActor addActor -> {
+                    jsonObject = (JsonObject) context.serialize(addActor);
+                    jsonObject.addProperty("action_type", "add_actor");
                 }
-                case RemoveCharacter removeCharacter -> {
-                    jsonObject = (JsonObject) context.serialize(removeCharacter);
-                    jsonObject.addProperty("action_type", "remove_character");
+                case RemoveActor removeActor -> {
+                    jsonObject = (JsonObject) context.serialize(removeActor);
+                    jsonObject.addProperty("action_type", "remove_actor");
                 }
                 default -> throw new IllegalStateException("Unknown action type: " + src.getClass());
             }

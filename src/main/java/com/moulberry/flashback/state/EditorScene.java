@@ -1,6 +1,6 @@
 package com.moulberry.flashback.state;
 
-import com.moulberry.flashback.character.CharacterManager;
+import com.moulberry.flashback.actor.ActorManager;
 import com.moulberry.flashback.keyframe.Keyframe;
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class EditorScene {
 
     public String name;
     public final List<KeyframeTrack> keyframeTracks = new ArrayList<>();
-    public CharacterManager characterManager = new CharacterManager();
+    public ActorManager actorManager = new ActorManager();
     public int exportStartTicks = -1;
     public int exportEndTicks = -1;
 

@@ -1,4 +1,4 @@
-package com.moulberry.flashback.character;
+package com.moulberry.flashback.actor;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -11,8 +11,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.moulberry.flashback.FilePlayerSkin;
 import com.moulberry.flashback.Flashback;
-import net.minecraft.client.Minecraft;
 import com.moulberry.flashback.combo_options.ComboOption;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.PlayerSkin;
 
@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class CharacterSkin {
+public class ActorSkin {
 
     public enum SkinType implements ComboOption {
         DEFAULT_STEVE("Default (Steve)"),
@@ -77,9 +77,9 @@ public class CharacterSkin {
     private transient boolean skinFetchPending = false;
     private transient long lastFetchAttempt = 0;
 
-    public CharacterSkin() {}
+    public ActorSkin() {}
 
-    public CharacterSkin(SkinType skinType, String skinValue, ModelType modelType) {
+    public ActorSkin(SkinType skinType, String skinValue, ModelType modelType) {
         this.skinType = skinType;
         this.skinValue = Objects.requireNonNullElse(skinValue, "");
         this.modelType = modelType;
@@ -199,22 +199,22 @@ public class CharacterSkin {
         return skin != null && skin.model() == PlayerSkin.Model.SLIM;
     }
 
-    public CharacterSkin copy() {
-        return new CharacterSkin(this.skinType, this.skinValue, this.modelType);
+    public ActorSkin copy() {
+        return new ActorSkin(this.skinType, this.skinValue, this.modelType);
     }
 
-    public static class TypeAdapter implements JsonSerializer<CharacterSkin>, JsonDeserializer<CharacterSkin> {
+    public static class TypeAdapter implements JsonSerializer<ActorSkin>, JsonDeserializer<ActorSkin> {
         @Override
-        public CharacterSkin deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public ActorSkin deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             SkinType type = obj.has("type") ? SkinType.valueOf(obj.get("type").getAsString()) : SkinType.DEFAULT_STEVE;
             ModelType model = obj.has("model") ? ModelType.valueOf(obj.get("model").getAsString()) : ModelType.AUTO;
             String val = obj.has("value") ? obj.get("value").getAsString() : "";
-            return new CharacterSkin(type, val, model);
+            return new ActorSkin(type, val, model);
         }
 
         @Override
-        public JsonElement serialize(CharacterSkin src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(ActorSkin src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("type", src.skinType.name());
             obj.addProperty("model", src.modelType.name());

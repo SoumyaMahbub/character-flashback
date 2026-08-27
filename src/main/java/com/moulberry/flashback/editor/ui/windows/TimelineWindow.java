@@ -768,10 +768,10 @@ public class TimelineWindow {
                     nextKeyframeTick = ceilingKey;
                 }
             }
-            if (editorScene.characterManager != null) {
-                for (var ch : editorScene.characterManager.getCharacters()) {
-                    for (var track : ch.getTracks().values()) {
-                        Integer ceilingKey = track.getKeyframesByTick().ceilingKey(cursorTicks + 1);
+            if (editorScene.actorManager != null) {
+                for (var actor : editorScene.actorManager.getActors()) {
+                    for (var track : actor.getTracks().values()) {
+                        Integer ceilingKey = track.getKeyframes().ceilingKey(cursorTicks + 1);
                         if (ceilingKey != null && ceilingKey < nextKeyframeTick) {
                             nextKeyframeTick = ceilingKey;
                         }
@@ -803,10 +803,10 @@ public class TimelineWindow {
                     previousKeyframeTick = floorKey;
                 }
             }
-            if (editorScene.characterManager != null) {
-                for (var ch : editorScene.characterManager.getCharacters()) {
-                    for (var track : ch.getTracks().values()) {
-                        Integer floorKey = track.getKeyframesByTick().floorKey(cursorTicks - 1);
+            if (editorScene.actorManager != null) {
+                for (var actor : editorScene.actorManager.getActors()) {
+                    for (var track : actor.getTracks().values()) {
+                        Integer floorKey = track.getKeyframes().floorKey(cursorTicks - 1);
                         if (floorKey != null && floorKey > previousKeyframeTick) {
                             previousKeyframeTick = floorKey;
                         }
@@ -2197,8 +2197,8 @@ public class TimelineWindow {
             }
 
             ImGui.separator();
-            if (ImGui.selectable("Animated Character / Model...")) {
-                Flashback.getConfig().internal.openedWindows.add("characters");
+            if (ImGui.selectable("Actors & Characters...")) {
+                Flashback.getConfig().internal.openedWindows.add("actors");
                 Flashback.getConfig().delayedSaveToDefaultFolder();
                 ImGui.closeCurrentPopup();
             }

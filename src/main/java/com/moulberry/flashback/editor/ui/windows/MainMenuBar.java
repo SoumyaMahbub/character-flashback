@@ -93,8 +93,8 @@ public class MainMenuBar {
         if (ImGui.menuItem(I18n.get("flashback.render_filter") + "##RenderFilter")) {
             toggleWindow("render_filter");
         }
-        if (ImGui.menuItem("Characters##Characters")) {
-            toggleWindow("characters");
+        if (ImGui.menuItem("Actors & Characters##Actors")) {
+            toggleWindow("actors");
         }
 
         ImGui.separator();

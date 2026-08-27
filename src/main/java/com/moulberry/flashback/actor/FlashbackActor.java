@@ -1,4 +1,4 @@
-package com.moulberry.flashback.character;
+package com.moulberry.flashback.actor;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AnimatedCharacter {
+public class FlashbackActor {
 
     private final UUID id;
     private String name;
     private boolean visible = true;
-    private CharacterSkin skin = new CharacterSkin();
+    private ActorSkin skin = new ActorSkin();
 
     // Outer layer visibility
     private boolean hatVisible = true;
@@ -35,17 +35,17 @@ public class AnimatedCharacter {
     private boolean rightPantsVisible = true;
 
     // Animation tracks
-    private final Map<CharacterTrackType, CharacterAnimationTrack> tracks = new EnumMap<>(CharacterTrackType.class);
+    private final Map<ActorTrackType, ActorAnimationTrack> tracks = new EnumMap<>(ActorTrackType.class);
 
-    // Saved poses and active clip
-    private final List<CharacterPose> savedPoses = new ArrayList<>();
-    private CharacterAnimationClip activeClip = new CharacterAnimationClip("Active Clip", CharacterAnimationClip.ClipType.NONE, 20);
+    // Saved poses and active procedural clip
+    private final List<ActorPose> savedPoses = new ArrayList<>();
+    private ActorAnimationClip activeClip = new ActorAnimationClip("Active Clip", ActorAnimationClip.ClipType.NONE, 20);
 
     // Base user/keyframed pose (unclipped)
-    private final CharacterPose basePose = new CharacterPose("Base");
+    private final ActorPose basePose = new ActorPose("Base");
 
-    // Runtime evaluated state (with procedural clips applied)
-    private transient CharacterPose evaluatedPose = new CharacterPose("Evaluated");
+    // Runtime evaluated state
+    private transient ActorPose evaluatedPose = new ActorPose("Evaluated");
     private transient float evalPosX = 0.0f;
     private transient float evalPosY = 0.0f;
     private transient float evalPosZ = 0.0f;
@@ -57,16 +57,16 @@ public class AnimatedCharacter {
     private transient float evalScaleZ = 1.0f;
     private transient float lastEvaluatedTick = Float.NaN;
 
-    public AnimatedCharacter(UUID id, String name) {
+    public FlashbackActor(UUID id, String name) {
         this.id = Objects.requireNonNull(id);
-        this.name = Objects.requireNonNullElse(name, "Character");
+        this.name = Objects.requireNonNullElse(name, "Actor");
         this.initTracks();
     }
 
     private void initTracks() {
-        for (CharacterTrackType type : CharacterTrackType.values()) {
+        for (ActorTrackType type : ActorTrackType.values()) {
             if (!this.tracks.containsKey(type)) {
-                this.tracks.put(type, new CharacterAnimationTrack(type));
+                this.tracks.put(type, new ActorAnimationTrack(type));
             }
         }
     }
@@ -91,12 +91,12 @@ public class AnimatedCharacter {
         this.visible = visible;
     }
 
-    public CharacterSkin getSkin() {
+    public ActorSkin getSkin() {
         return skin;
     }
 
-    public void setSkin(CharacterSkin skin) {
-        this.skin = Objects.requireNonNullElseGet(skin, CharacterSkin::new);
+    public void setSkin(ActorSkin skin) {
+        this.skin = Objects.requireNonNullElseGet(skin, ActorSkin::new);
     }
 
     public boolean isHatVisible() {
@@ -147,32 +147,50 @@ public class AnimatedCharacter {
         this.rightPantsVisible = rightPantsVisible;
     }
 
-    public Map<CharacterTrackType, CharacterAnimationTrack> getTracks() {
+    public Map<ActorTrackType, ActorAnimationTrack> getTracks() {
         return tracks;
     }
 
-    public CharacterAnimationTrack getTrack(CharacterTrackType trackType) {
-        return tracks.computeIfAbsent(trackType, CharacterAnimationTrack::new);
+    public ActorAnimationTrack getTrack(ActorTrackType type) {
+        return tracks.computeIfAbsent(type, ActorAnimationTrack::new);
     }
 
-    public List<CharacterPose> getSavedPoses() {
+    public List<ActorPose> getSavedPoses() {
         return savedPoses;
     }
 
-    public CharacterAnimationClip getActiveClip() {
+    public ActorAnimationClip getActiveClip() {
         return activeClip;
     }
 
-    public void setActiveClip(CharacterAnimationClip activeClip) {
-        this.activeClip = Objects.requireNonNullElseGet(activeClip, () -> new CharacterAnimationClip("Active Clip", CharacterAnimationClip.ClipType.NONE, 20));
+    public void setActiveClip(ActorAnimationClip activeClip) {
+        this.activeClip = Objects.requireNonNullElseGet(activeClip, ActorAnimationClip::new);
     }
 
-    public CharacterPose getBasePose() {
+    public ActorPose getBasePose() {
         return basePose;
     }
 
-    public CharacterPose getEvaluatedPose() {
+    public ActorPose getEvaluatedPose() {
         return evaluatedPose;
+    }
+
+    public void setPosition(Vector3f position) {
+        this.evalPosX = position.x;
+        this.evalPosY = position.y;
+        this.evalPosZ = position.z;
+    }
+
+    public void setRotation(float pitch, float yaw, float roll) {
+        this.evalRotPitch = pitch;
+        this.evalRotYaw = yaw;
+        this.evalRotRoll = roll;
+    }
+
+    public void setScale(float scaleX, float scaleY, float scaleZ) {
+        this.evalScaleX = scaleX;
+        this.evalScaleY = scaleY;
+        this.evalScaleZ = scaleZ;
     }
 
     public float getEvalPosX() {
@@ -215,20 +233,20 @@ public class AnimatedCharacter {
         this.lastEvaluatedTick = tick;
 
         // Evaluate World Transform
-        if (!getTrack(CharacterTrackType.WORLD_POS_X).isEmpty()) this.evalPosX = getTrack(CharacterTrackType.WORLD_POS_X).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_POS_Y).isEmpty()) this.evalPosY = getTrack(CharacterTrackType.WORLD_POS_Y).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_POS_Z).isEmpty()) this.evalPosZ = getTrack(CharacterTrackType.WORLD_POS_Z).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_ROT_PITCH).isEmpty()) this.evalRotPitch = getTrack(CharacterTrackType.WORLD_ROT_PITCH).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_ROT_YAW).isEmpty()) this.evalRotYaw = getTrack(CharacterTrackType.WORLD_ROT_YAW).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_ROT_ROLL).isEmpty()) this.evalRotRoll = getTrack(CharacterTrackType.WORLD_ROT_ROLL).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_SCALE_X).isEmpty()) this.evalScaleX = getTrack(CharacterTrackType.WORLD_SCALE_X).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_SCALE_Y).isEmpty()) this.evalScaleY = getTrack(CharacterTrackType.WORLD_SCALE_Y).evaluate(tick);
-        if (!getTrack(CharacterTrackType.WORLD_SCALE_Z).isEmpty()) this.evalScaleZ = getTrack(CharacterTrackType.WORLD_SCALE_Z).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_POS_X).isEmpty()) this.evalPosX = getTrack(ActorTrackType.WORLD_POS_X).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_POS_Y).isEmpty()) this.evalPosY = getTrack(ActorTrackType.WORLD_POS_Y).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_POS_Z).isEmpty()) this.evalPosZ = getTrack(ActorTrackType.WORLD_POS_Z).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_ROT_PITCH).isEmpty()) this.evalRotPitch = getTrack(ActorTrackType.WORLD_ROT_PITCH).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_ROT_YAW).isEmpty()) this.evalRotYaw = getTrack(ActorTrackType.WORLD_ROT_YAW).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_ROT_ROLL).isEmpty()) this.evalRotRoll = getTrack(ActorTrackType.WORLD_ROT_ROLL).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_SCALE_X).isEmpty()) this.evalScaleX = getTrack(ActorTrackType.WORLD_SCALE_X).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_SCALE_Y).isEmpty()) this.evalScaleY = getTrack(ActorTrackType.WORLD_SCALE_Y).evaluate(tick);
+        if (!getTrack(ActorTrackType.WORLD_SCALE_Z).isEmpty()) this.evalScaleZ = getTrack(ActorTrackType.WORLD_SCALE_Z).evaluate(tick);
 
         // Evaluate Limbs from tracks into basePose
-        for (CharacterTrackType type : CharacterTrackType.values()) {
+        for (ActorTrackType type : ActorTrackType.values()) {
             if (type.isBodyPose()) {
-                CharacterAnimationTrack track = getTrack(type);
+                ActorAnimationTrack track = getTrack(type);
                 if (!track.isEmpty()) {
                     float val = track.evaluate(tick);
                     this.basePose.setTrackValue(type, val);
@@ -245,7 +263,7 @@ public class AnimatedCharacter {
         }
     }
 
-    public void setKeyframe(CharacterTrackType trackType, int tick, float value, InterpolationType interpolationType) {
+    public void setKeyframe(ActorTrackType trackType, int tick, float value, InterpolationType interpolationType) {
         getTrack(trackType).setKeyframe(tick, value, interpolationType);
         if (trackType.isBodyPose()) {
             this.basePose.setTrackValue(trackType, value);
@@ -253,24 +271,24 @@ public class AnimatedCharacter {
         }
     }
 
-    public void removeKeyframe(CharacterTrackType trackType, int tick) {
+    public void removeKeyframe(ActorTrackType trackType, int tick) {
         getTrack(trackType).removeKeyframe(tick);
     }
 
     public void insertAllTransformKeyframes(int tick, InterpolationType interpolationType) {
-        setKeyframe(CharacterTrackType.WORLD_POS_X, tick, this.evalPosX, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_POS_Y, tick, this.evalPosY, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_POS_Z, tick, this.evalPosZ, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_ROT_PITCH, tick, this.evalRotPitch, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_ROT_YAW, tick, this.evalRotYaw, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_ROT_ROLL, tick, this.evalRotRoll, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_SCALE_X, tick, this.evalScaleX, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_SCALE_Y, tick, this.evalScaleY, interpolationType);
-        setKeyframe(CharacterTrackType.WORLD_SCALE_Z, tick, this.evalScaleZ, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_POS_X, tick, this.evalPosX, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_POS_Y, tick, this.evalPosY, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_POS_Z, tick, this.evalPosZ, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_ROT_PITCH, tick, this.evalRotPitch, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_ROT_YAW, tick, this.evalRotYaw, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_ROT_ROLL, tick, this.evalRotRoll, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_SCALE_X, tick, this.evalScaleX, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_SCALE_Y, tick, this.evalScaleY, interpolationType);
+        setKeyframe(ActorTrackType.WORLD_SCALE_Z, tick, this.evalScaleZ, interpolationType);
     }
 
     public void insertAllPoseKeyframes(int tick, InterpolationType interpolationType) {
-        for (CharacterTrackType type : CharacterTrackType.values()) {
+        for (ActorTrackType type : ActorTrackType.values()) {
             if (type.isBodyPose()) {
                 setKeyframe(type, tick, this.basePose.getTrackValue(type), interpolationType);
             }
@@ -282,7 +300,7 @@ public class AnimatedCharacter {
         insertAllPoseKeyframes(tick, interpolationType);
     }
 
-    public void applyPose(CharacterPose pose) {
+    public void applyPose(ActorPose pose) {
         if (pose == null) return;
         this.basePose.setFrom(pose);
         this.evaluatedPose.setFrom(pose);
@@ -294,20 +312,8 @@ public class AnimatedCharacter {
         insertAllPoseKeyframes(tick, interpolationType);
     }
 
-    public void bakeActiveClipToKeyframes(int startTick, int endTick, int stepTicks, InterpolationType interpolationType) {
-        if (this.activeClip != null) {
-            this.activeClip.bakeToKeyframes(this, startTick, endTick, stepTicks, interpolationType);
-        }
-    }
-
-    public void setPosition(Vector3f pos) {
-        this.evalPosX = pos.x;
-        this.evalPosY = pos.y;
-        this.evalPosZ = pos.z;
-    }
-
-    public AnimatedCharacter duplicate(UUID newId, String newName) {
-        AnimatedCharacter copy = new AnimatedCharacter(newId, newName);
+    public FlashbackActor duplicate(UUID newId, String newName) {
+        FlashbackActor copy = new FlashbackActor(newId, newName);
         copy.visible = this.visible;
         copy.skin = this.skin.copy();
         copy.hatVisible = this.hatVisible;
@@ -317,11 +323,11 @@ public class AnimatedCharacter {
         copy.leftPantsVisible = this.leftPantsVisible;
         copy.rightPantsVisible = this.rightPantsVisible;
 
-        for (Map.Entry<CharacterTrackType, CharacterAnimationTrack> entry : this.tracks.entrySet()) {
+        for (Map.Entry<ActorTrackType, ActorAnimationTrack> entry : this.tracks.entrySet()) {
             copy.tracks.put(entry.getKey(), entry.getValue().copy());
         }
 
-        for (CharacterPose pose : this.savedPoses) {
+        for (ActorPose pose : this.savedPoses) {
             copy.savedPoses.add(pose.copy());
         }
 
@@ -341,29 +347,29 @@ public class AnimatedCharacter {
         return copy;
     }
 
-    public static class TypeAdapter implements JsonSerializer<AnimatedCharacter>, JsonDeserializer<AnimatedCharacter> {
+    public static class TypeAdapter implements JsonSerializer<FlashbackActor>, JsonDeserializer<FlashbackActor> {
         @Override
-        public AnimatedCharacter deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public FlashbackActor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
             UUID id = UUID.fromString(obj.get("id").getAsString());
             String name = obj.get("name").getAsString();
-            AnimatedCharacter character = new AnimatedCharacter(id, name);
+            FlashbackActor actor = new FlashbackActor(id, name);
 
-            if (obj.has("visible")) character.visible = obj.get("visible").getAsBoolean();
-            if (obj.has("skin")) character.skin = context.deserialize(obj.get("skin"), CharacterSkin.class);
-            if (obj.has("hatVisible")) character.hatVisible = obj.get("hatVisible").getAsBoolean();
-            if (obj.has("jacketVisible")) character.jacketVisible = obj.get("jacketVisible").getAsBoolean();
-            if (obj.has("leftSleeveVisible")) character.leftSleeveVisible = obj.get("leftSleeveVisible").getAsBoolean();
-            if (obj.has("rightSleeveVisible")) character.rightSleeveVisible = obj.get("rightSleeveVisible").getAsBoolean();
-            if (obj.has("leftPantsVisible")) character.leftPantsVisible = obj.get("leftPantsVisible").getAsBoolean();
-            if (obj.has("rightPantsVisible")) character.rightPantsVisible = obj.get("rightPantsVisible").getAsBoolean();
+            if (obj.has("visible")) actor.visible = obj.get("visible").getAsBoolean();
+            if (obj.has("skin")) actor.skin = context.deserialize(obj.get("skin"), ActorSkin.class);
+            if (obj.has("hatVisible")) actor.hatVisible = obj.get("hatVisible").getAsBoolean();
+            if (obj.has("jacketVisible")) actor.jacketVisible = obj.get("jacketVisible").getAsBoolean();
+            if (obj.has("leftSleeveVisible")) actor.leftSleeveVisible = obj.get("leftSleeveVisible").getAsBoolean();
+            if (obj.has("rightSleeveVisible")) actor.rightSleeveVisible = obj.get("rightSleeveVisible").getAsBoolean();
+            if (obj.has("leftPantsVisible")) actor.leftPantsVisible = obj.get("leftPantsVisible").getAsBoolean();
+            if (obj.has("rightPantsVisible")) actor.rightPantsVisible = obj.get("rightPantsVisible").getAsBoolean();
 
             if (obj.has("tracks")) {
                 JsonArray tracksArray = obj.getAsJsonArray("tracks");
                 for (JsonElement trackElem : tracksArray) {
-                    CharacterAnimationTrack track = context.deserialize(trackElem, CharacterAnimationTrack.class);
+                    ActorAnimationTrack track = context.deserialize(trackElem, ActorAnimationTrack.class);
                     if (track != null) {
-                        character.tracks.put(track.getTrackType(), track);
+                        actor.tracks.put(track.getTrackType(), track);
                     }
                 }
             }
@@ -371,29 +377,29 @@ public class AnimatedCharacter {
             if (obj.has("savedPoses")) {
                 JsonArray posesArray = obj.getAsJsonArray("savedPoses");
                 for (JsonElement poseElem : posesArray) {
-                    CharacterPose pose = context.deserialize(poseElem, CharacterPose.class);
+                    ActorPose pose = context.deserialize(poseElem, ActorPose.class);
                     if (pose != null) {
-                        character.savedPoses.add(pose);
+                        actor.savedPoses.add(pose);
                     }
                 }
             }
 
             if (obj.has("activeClip")) {
-                character.activeClip = context.deserialize(obj.get("activeClip"), CharacterAnimationClip.class);
+                actor.activeClip = context.deserialize(obj.get("activeClip"), ActorAnimationClip.class);
             }
 
             if (obj.has("basePose")) {
-                CharacterPose bp = context.deserialize(obj.get("basePose"), CharacterPose.class);
+                ActorPose bp = context.deserialize(obj.get("basePose"), ActorPose.class);
                 if (bp != null) {
-                    character.basePose.setFrom(bp);
+                    actor.basePose.setFrom(bp);
                 }
             }
 
-            return character;
+            return actor;
         }
 
         @Override
-        public JsonElement serialize(AnimatedCharacter src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(FlashbackActor src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("id", src.id.toString());
             obj.addProperty("name", src.name);
@@ -407,13 +413,13 @@ public class AnimatedCharacter {
             obj.addProperty("rightPantsVisible", src.rightPantsVisible);
 
             JsonArray tracksArray = new JsonArray();
-            for (CharacterAnimationTrack track : src.tracks.values()) {
+            for (ActorAnimationTrack track : src.tracks.values()) {
                 tracksArray.add(context.serialize(track));
             }
             obj.add("tracks", tracksArray);
 
             JsonArray posesArray = new JsonArray();
-            for (CharacterPose pose : src.savedPoses) {
+            for (ActorPose pose : src.savedPoses) {
                 posesArray.add(context.serialize(pose));
             }
             obj.add("savedPoses", posesArray);

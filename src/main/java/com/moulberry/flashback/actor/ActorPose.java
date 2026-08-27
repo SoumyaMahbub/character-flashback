@@ -1,4 +1,4 @@
-package com.moulberry.flashback.character;
+package com.moulberry.flashback.actor;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -10,7 +10,7 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 
-public class CharacterPose {
+public class ActorPose {
 
     public String name = "Default Pose";
 
@@ -38,9 +38,9 @@ public class CharacterPose {
     public float rightLegYaw = 0.0f;
     public float rightLegRoll = 0.0f;
 
-    public CharacterPose() {}
+    public ActorPose() {}
 
-    public CharacterPose(String name) {
+    public ActorPose(String name) {
         this.name = name;
     }
 
@@ -65,7 +65,7 @@ public class CharacterPose {
         this.rightLegRoll = 0.0f;
     }
 
-    public float getTrackValue(CharacterTrackType trackType) {
+    public float getTrackValue(ActorTrackType trackType) {
         return switch (trackType) {
             case HEAD_PITCH -> headPitch;
             case HEAD_YAW -> headYaw;
@@ -89,7 +89,7 @@ public class CharacterPose {
         };
     }
 
-    public void setTrackValue(CharacterTrackType trackType, float value) {
+    public void setTrackValue(ActorTrackType trackType, float value) {
         switch (trackType) {
             case HEAD_PITCH -> headPitch = value;
             case HEAD_YAW -> headYaw = value;
@@ -113,13 +113,13 @@ public class CharacterPose {
         }
     }
 
-    public CharacterPose copy() {
-        CharacterPose copy = new CharacterPose(this.name);
+    public ActorPose copy() {
+        ActorPose copy = new ActorPose(this.name);
         copy.setFrom(this);
         return copy;
     }
 
-    public void setFrom(CharacterPose other) {
+    public void setFrom(ActorPose other) {
         this.name = other.name;
         this.headPitch = other.headPitch;
         this.headYaw = other.headYaw;
@@ -141,11 +141,11 @@ public class CharacterPose {
         this.rightLegRoll = other.rightLegRoll;
     }
 
-    public static class TypeAdapter implements JsonSerializer<CharacterPose>, JsonDeserializer<CharacterPose> {
+    public static class TypeAdapter implements JsonSerializer<ActorPose>, JsonDeserializer<ActorPose> {
         @Override
-        public CharacterPose deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public ActorPose deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
-            CharacterPose pose = new CharacterPose();
+            ActorPose pose = new ActorPose();
             if (obj.has("name")) pose.name = obj.get("name").getAsString();
             if (obj.has("headPitch")) pose.headPitch = obj.get("headPitch").getAsFloat();
             if (obj.has("headYaw")) pose.headYaw = obj.get("headYaw").getAsFloat();
@@ -169,7 +169,7 @@ public class CharacterPose {
         }
 
         @Override
-        public JsonElement serialize(CharacterPose src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(ActorPose src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("name", src.name);
             obj.addProperty("headPitch", src.headPitch);

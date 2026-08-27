@@ -991,13 +991,29 @@ public class ReplayUI {
                     long stamp = editorState.acquireRead();
                     try {
                         EditorScene scene = editorState.getCurrentScene(stamp);
-                        if (scene != null && scene.characterManager != null) {
-                            UUID charHit = com.moulberry.flashback.character.render.CharacterGizmo.raycastCharacter(from, look, scene.characterManager);
-                            if (charHit != null) {
-                                scene.characterManager.setSelectedCharacterId(charHit);
-                                var ch = scene.characterManager.getCharacter(charHit);
-                                if (ch != null) {
-                                    setInfoOverlay("Selected Character: " + ch.getName());
+                        if (scene != null && scene.actorManager != null) {
+                            UUID bestHit = null;
+                            double bestDist = Double.MAX_VALUE;
+                            for (var actor : scene.actorManager.getActors()) {
+                                if (!actor.isVisible()) continue;
+                                net.minecraft.world.phys.AABB bb = new net.minecraft.world.phys.AABB(
+                                    actor.getEvalPosX() - 0.4, actor.getEvalPosY(), actor.getEvalPosZ() - 0.4,
+                                    actor.getEvalPosX() + 0.4, actor.getEvalPosY() + 1.9, actor.getEvalPosZ() + 0.4
+                                );
+                                var hitOpt = bb.clip(from, from.add(look.scale(100.0)));
+                                if (hitOpt.isPresent()) {
+                                    double d = from.distanceToSqr(hitOpt.get());
+                                    if (d < bestDist) {
+                                        bestDist = d;
+                                        bestHit = actor.getId();
+                                    }
+                                }
+                            }
+                            if (bestHit != null) {
+                                scene.actorManager.setSelectedActorId(bestHit);
+                                var actor = scene.actorManager.getActor(bestHit);
+                                if (actor != null) {
+                                    setInfoOverlay("Selected Actor: " + actor.getName());
                                 }
                                 return;
                             }
