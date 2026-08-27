@@ -29,9 +29,26 @@ public class WorldRenderHook {
 
     public static void renderHook(PoseStack poseStack, float partialTick, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, Matrix4f projection) {
         ReplayServer replayServer = Flashback.getReplayServer();
-        if (replayServer == null || Flashback.isExporting() || !ReplayUI.isActive()) {
+        if (replayServer == null && !Flashback.isExporting()) {
             return;
         }
+
+        float replayTick;
+        if (Flashback.isExporting() && Flashback.EXPORT_JOB != null) {
+            replayTick = (float) (Flashback.EXPORT_JOB.getSettings().startTick() + Flashback.EXPORT_JOB.getCurrentTickDouble());
+        } else if (replayServer != null) {
+            replayTick = (float) replayServer.getPartialReplayTick();
+        } else {
+            return;
+        }
+
+        com.moulberry.flashback.character.render.CharacterRenderer.renderCharacters(poseStack, camera, replayTick);
+
+        if (Flashback.isExporting() || !ReplayUI.isActive()) {
+            return;
+        }
+
+        com.moulberry.flashback.character.render.CharacterGizmo.renderGizmos(poseStack, camera);
 
         EditorState editorState = EditorStateManager.getCurrent();
         if (editorState != null && editorState.replayVisuals.cameraPath) {

@@ -446,5 +446,9 @@
   "flashback.recording_controls_location.below": "Below",
   "flashback.recording_controls_location.left": "Left",
   "flashback.recording_controls_location.hidden": "Hidden",
-  "flashback.disable_server_resource_packs": "Disable Server Resource Packs"
+  "flashback.disable_server_resource_packs": "Disable Server Resource Packs",
+  "flashback.player_list": "Player List",
+  "flashback.movement": "Movement",
+  "flashback.render_filter": "Render Filter",
+  "flashback.characters": "Characters"
 }

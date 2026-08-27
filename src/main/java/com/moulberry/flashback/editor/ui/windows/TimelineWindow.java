@@ -768,6 +768,16 @@ public class TimelineWindow {
                     nextKeyframeTick = ceilingKey;
                 }
             }
+            if (editorScene.characterManager != null) {
+                for (var ch : editorScene.characterManager.getCharacters()) {
+                    for (var track : ch.getTracks().values()) {
+                        Integer ceilingKey = track.getKeyframesByTick().ceilingKey(cursorTicks + 1);
+                        if (ceilingKey != null && ceilingKey < nextKeyframeTick) {
+                            nextKeyframeTick = ceilingKey;
+                        }
+                    }
+                }
+            }
             replayServer.goToReplayTick(nextKeyframeTick);
             replayServer.forceApplyKeyframes.set(true);
         }
@@ -791,6 +801,16 @@ public class TimelineWindow {
                 Integer floorKey = track.keyframesByTick.floorKey(cursorTicks-1);
                 if (floorKey != null && floorKey > previousKeyframeTick) {
                     previousKeyframeTick = floorKey;
+                }
+            }
+            if (editorScene.characterManager != null) {
+                for (var ch : editorScene.characterManager.getCharacters()) {
+                    for (var track : ch.getTracks().values()) {
+                        Integer floorKey = track.getKeyframesByTick().floorKey(cursorTicks - 1);
+                        if (floorKey != null && floorKey > previousKeyframeTick) {
+                            previousKeyframeTick = floorKey;
+                        }
+                    }
                 }
             }
             replayServer.goToReplayTick(previousKeyframeTick);
@@ -2174,6 +2194,13 @@ public class TimelineWindow {
                     editorState.markDirty();
                     ImGui.closeCurrentPopup();
                 }
+            }
+
+            ImGui.separator();
+            if (ImGui.selectable("Animated Character / Model...")) {
+                Flashback.getConfig().internal.openedWindows.add("characters");
+                Flashback.getConfig().delayedSaveToDefaultFolder();
+                ImGui.closeCurrentPopup();
             }
             ImGui.endPopup();
         }

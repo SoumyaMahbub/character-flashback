@@ -11,7 +11,8 @@ public enum WindowType {
 
     PLAYER_LIST("player_list", PlayerListWindow::render),
     MOVEMENT("movement", MovementWindow::render),
-    RENDER_FILTER("render_filter", RenderFilterWindow::render);
+    RENDER_FILTER("render_filter", RenderFilterWindow::render),
+    CHARACTERS("characters", com.moulberry.flashback.character.CharacterWindow::render);
 
     private final String windowId;
     private final ImGuiWindowRenderer renderMethod;

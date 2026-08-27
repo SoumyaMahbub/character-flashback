@@ -14,6 +14,7 @@ import com.moulberry.flashback.editor.ui.windows.PreferencesWindow;
 import com.moulberry.flashback.editor.ui.windows.SelectedEntityPopup;
 import com.moulberry.flashback.editor.ui.windows.WindowType;
 import com.moulberry.flashback.playback.ReplayServer;
+import com.moulberry.flashback.state.EditorScene;
 import com.moulberry.flashback.state.EditorState;
 import com.moulberry.flashback.state.EditorStateManager;
 import com.moulberry.flashback.combo_options.Sizing;
@@ -982,6 +983,31 @@ public class ReplayUI {
 
     private static void handleBasicInputs() {
         if (ImGui.isMouseClicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+            Vec3 look = getMouseLookVector();
+            if (look != null && Minecraft.getInstance().cameraEntity != null) {
+                Vec3 from = Minecraft.getInstance().cameraEntity.getEyePosition();
+                EditorState editorState = EditorStateManager.getCurrent();
+                if (editorState != null) {
+                    long stamp = editorState.acquireRead();
+                    try {
+                        EditorScene scene = editorState.getCurrentScene(stamp);
+                        if (scene != null && scene.characterManager != null) {
+                            UUID charHit = com.moulberry.flashback.character.render.CharacterGizmo.raycastCharacter(from, look, scene.characterManager);
+                            if (charHit != null) {
+                                scene.characterManager.setSelectedCharacterId(charHit);
+                                var ch = scene.characterManager.getCharacter(charHit);
+                                if (ch != null) {
+                                    setInfoOverlay("Selected Character: " + ch.getName());
+                                }
+                                return;
+                            }
+                        }
+                    } finally {
+                        editorState.release(stamp);
+                    }
+                }
+            }
+
             HitResult result = getLookTarget();
             if (result instanceof EntityHitResult entityHitResult) {
                 if (Minecraft.getInstance().player == Minecraft.getInstance().cameraEntity) {

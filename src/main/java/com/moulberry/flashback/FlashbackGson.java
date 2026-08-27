@@ -48,7 +48,19 @@ public class FlashbackGson {
             .registerTypeAdapter(EditorSceneHistoryAction.RemoveKeyframe.class, new EditorSceneHistoryAction.RemoveKeyframe.TypeAdapter())
             .registerTypeAdapter(EditorSceneHistoryAction.AddTrack.class, new EditorSceneHistoryAction.AddTrack.TypeAdapter())
             .registerTypeAdapter(EditorSceneHistoryAction.RemoveTrack.class, new EditorSceneHistoryAction.RemoveTrack.TypeAdapter())
-            .registerTypeAdapter(EditorSceneHistoryAction.class, new EditorSceneHistoryAction.TypeAdapter());
+            .registerTypeAdapter(EditorSceneHistoryAction.SetCharacterKeyframe.class, new EditorSceneHistoryAction.SetCharacterKeyframe.TypeAdapter())
+            .registerTypeAdapter(EditorSceneHistoryAction.RemoveCharacterKeyframe.class, new EditorSceneHistoryAction.RemoveCharacterKeyframe.TypeAdapter())
+            .registerTypeAdapter(EditorSceneHistoryAction.AddCharacter.class, new EditorSceneHistoryAction.AddCharacter.TypeAdapter())
+            .registerTypeAdapter(EditorSceneHistoryAction.RemoveCharacter.class, new EditorSceneHistoryAction.RemoveCharacter.TypeAdapter())
+            .registerTypeAdapter(EditorSceneHistoryAction.class, new EditorSceneHistoryAction.TypeAdapter())
+
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterKeyframe.class, new com.moulberry.flashback.character.CharacterKeyframe.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterAnimationTrack.class, new com.moulberry.flashback.character.CharacterAnimationTrack.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterSkin.class, new com.moulberry.flashback.character.CharacterSkin.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterPose.class, new com.moulberry.flashback.character.CharacterPose.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterAnimationClip.class, new com.moulberry.flashback.character.CharacterAnimationClip.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.AnimatedCharacter.class, new com.moulberry.flashback.character.AnimatedCharacter.TypeAdapter())
+            .registerTypeAdapter(com.moulberry.flashback.character.CharacterManager.class, new com.moulberry.flashback.character.CharacterManager.TypeAdapter());
     }
 
 }
