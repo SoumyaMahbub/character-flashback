@@ -108,52 +108,32 @@ public class CharacterRenderer {
             // Apply limb rotations directly from evaluated pose (degrees converted to radians)
             CharacterPose pose = character.getEvaluatedPose();
 
-            float bodyPitchRad = (float) Math.toRadians(pose.bodyPitch);
-            float bodyYawRad = (float) Math.toRadians(pose.bodyYaw);
-            float bodyRollRad = (float) Math.toRadians(pose.bodyRoll);
+            // Body / Torso
+            model.body.xRot = (float) Math.toRadians(pose.bodyPitch);
+            model.body.yRot = (float) Math.toRadians(pose.bodyYaw);
+            model.body.zRot = (float) Math.toRadians(pose.bodyRoll);
 
-            model.body.xRot = bodyPitchRad;
-            model.body.yRot = bodyYawRad;
-            model.body.zRot = bodyRollRad;
+            // Head (relative to neck)
+            model.head.xRot = (float) Math.toRadians(pose.headPitch);
+            model.head.yRot = (float) Math.toRadians(pose.headYaw);
+            model.head.zRot = (float) Math.toRadians(pose.headRoll);
 
-            // Head (inherits torso orientation + local head rotation)
-            model.head.xRot = bodyPitchRad + (float) Math.toRadians(pose.headPitch);
-            model.head.yRot = bodyYawRad + (float) Math.toRadians(pose.headYaw);
-            model.head.zRot = bodyRollRad + (float) Math.toRadians(pose.headRoll);
+            // Left Arm
+            model.leftArm.xRot = (float) Math.toRadians(pose.leftArmPitch);
+            model.leftArm.yRot = (float) Math.toRadians(pose.leftArmYaw);
+            model.leftArm.zRot = (float) Math.toRadians(pose.leftArmRoll);
 
-            // Calculate rotated shoulder joint positions for natural torso parenting
-            float leftArmBaseX = isSlim ? 5.0f : 5.0f;
-            float leftArmBaseY = isSlim ? 2.5f : 2.0f;
-            float rightArmBaseX = isSlim ? -5.0f : -5.0f;
-            float rightArmBaseY = isSlim ? 2.5f : 2.0f;
+            // Right Arm
+            model.rightArm.xRot = (float) Math.toRadians(pose.rightArmPitch);
+            model.rightArm.yRot = (float) Math.toRadians(pose.rightArmYaw);
+            model.rightArm.zRot = (float) Math.toRadians(pose.rightArmRoll);
 
-            // Rotate left arm shoulder by body rotation
-            float cosYaw = (float) Math.cos(bodyYawRad);
-            float sinYaw = (float) Math.sin(bodyYawRad);
-            float cosPitch = (float) Math.cos(bodyPitchRad);
-            float sinPitch = (float) Math.sin(bodyPitchRad);
-            float cosRoll = (float) Math.cos(bodyRollRad);
-            float sinRoll = (float) Math.sin(bodyRollRad);
-
-            model.leftArm.x = (leftArmBaseX * cosRoll - leftArmBaseY * sinRoll) * cosYaw;
-            model.leftArm.y = leftArmBaseX * sinRoll + leftArmBaseY * cosRoll * cosPitch;
-            model.leftArm.z = leftArmBaseX * sinYaw + leftArmBaseY * sinPitch;
-            model.leftArm.xRot = bodyPitchRad + (float) Math.toRadians(pose.leftArmPitch);
-            model.leftArm.yRot = bodyYawRad + (float) Math.toRadians(pose.leftArmYaw);
-            model.leftArm.zRot = bodyRollRad + (float) Math.toRadians(pose.leftArmRoll);
-
-            model.rightArm.x = (rightArmBaseX * cosRoll - rightArmBaseY * sinRoll) * cosYaw;
-            model.rightArm.y = rightArmBaseX * sinRoll + rightArmBaseY * cosRoll * cosPitch;
-            model.rightArm.z = rightArmBaseX * sinYaw + rightArmBaseY * sinPitch;
-            model.rightArm.xRot = bodyPitchRad + (float) Math.toRadians(pose.rightArmPitch);
-            model.rightArm.yRot = bodyYawRad + (float) Math.toRadians(pose.rightArmYaw);
-            model.rightArm.zRot = bodyRollRad + (float) Math.toRadians(pose.rightArmRoll);
-
-            // Legs rotate from hip joints
+            // Left Leg
             model.leftLeg.xRot = (float) Math.toRadians(pose.leftLegPitch);
             model.leftLeg.yRot = (float) Math.toRadians(pose.leftLegYaw);
             model.leftLeg.zRot = (float) Math.toRadians(pose.leftLegRoll);
 
+            // Right Leg
             model.rightLeg.xRot = (float) Math.toRadians(pose.rightLegPitch);
             model.rightLeg.yRot = (float) Math.toRadians(pose.rightLegYaw);
             model.rightLeg.zRot = (float) Math.toRadians(pose.rightLegRoll);
